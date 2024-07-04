@@ -9,21 +9,20 @@ namespace FolderSynchronization.Helpers
 {
     internal class FilesUtilities
     {
-        public static bool FilesAreEqual_Hash(string file1, string file2)
+        public static byte[] GetFileContentsHash(string file) => GetFileContentsHash(new FileInfo(file));
+        public static byte[] GetFileContentsHash(FileInfo file)
         {
-            return FilesAreEqual_Hash(new FileInfo(file1), new FileInfo(file2));
+            using var fileStream = file.OpenRead();
+            return SHA256.Create().ComputeHash(fileStream);
         }
 
-        public static bool FilesAreEqual_Hash(FileInfo file1, FileInfo file2)
+        public static bool HashesAreEqual(byte[] hash1, byte[] hash2)
         {
-            byte[] file1Hash = SHA256.Create().ComputeHash(file1.OpenRead());
-            byte[] file2Hash = SHA256.Create().ComputeHash(file2.OpenRead());
-
-            for(int i = 0; i < file1Hash.Length; i++)
+            for (int i = 0; i < hash1.Length; i++)
             {
-                if (file1Hash[i] != file2Hash[i])
+                if (hash1[i] != hash2[i])
                 {
-                    return false; 
+                    return false;
                 }
             }
             return true;

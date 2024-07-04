@@ -11,21 +11,36 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
     {
         string sourceDir = _configuration["SourceDirectory"]!;
         string replicaDir = _configuration["ReplicaDirectory"]!;
+        _logger.LogInformation($"Source Folder: {sourceDir}");
+        _logger.LogInformation($"Replica Folder: {replicaDir}");
         while (!stoppingToken.IsCancellationRequested)
         {
             _logger.LogInformation("Starting the synchronization process...");
-            _logger.LogInformation($"Source Folder: {sourceDir}");
-            _logger.LogInformation($"Replica Folder: {replicaDir}");
 
             Task[] allTasks = [];
 
             FilesUtilities.CopyDirectories(sourceDir, replicaDir);
 
-            string[] sourceDirFiles = FilesUtilities.GetFiles(sourceDir);
+            Dictionary<string, byte[]> sourceFiles = FilesUtilities.GetFiles(sourceDir).ToDictionary(x => Path.GetRelativePath(sourceDir, x), FilesUtilities.GetFileContentsHash);
+            Dictionary<string, byte[]> replicaFiles = FilesUtilities.GetFiles(replicaDir).ToDictionary(x => Path.GetRelativePath(replicaDir, x), FilesUtilities.GetFileContentsHash);
+
             string[] replicaDirFiles = FilesUtilities.GetFiles(replicaDir);
-            foreach (var file in sourceDirFiles)
+            foreach (var file in sourceFiles.Keys)
             {
-                allTasks.Append(Task.Run(() => File.Copy(file, Path.Join(replicaDir, Path.GetRelativePath(sourceDir, file))), stoppingToken)
+                //TODO: check if move is better is case contents are same
+                if (replicaFiles.ContainsKey(file))
+                {
+                    if (FilesUtilities.HashesAreEqual(sourceFiles[file], replicaFiles[file]))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"Deleted \"{Path.GetFileName(file)}\" from {replicaDir}.");
+                        File.Delete(Path.Join(replicaDir, file));
+                    }
+                }
+                allTasks.Append(Task.Run(() => File.Copy(Path.Join(sourceDir, file), Path.Join(replicaDir, file)), stoppingToken)
                     .ContinueWith(task =>
                     {
                         if (task.IsCompletedSuccessfully)

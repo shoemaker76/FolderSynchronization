@@ -15,6 +15,7 @@ try
         Console.WriteLine(usageHelper);
         return 1;
     }
+    //TODO: Parse LogsFilePath Arg
     var loggerFilePath = args[2];
 
     var builder = Host.CreateDefaultBuilder(args);
