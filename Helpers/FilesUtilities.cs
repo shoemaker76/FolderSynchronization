@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Cryptography;
 
 namespace FolderSynchronization.Helpers
 {
-    internal class FilesUtilities
+    public static class FilesUtilities
     {
         public static byte[] GetFileContentsHash(string file) => GetFileContentsHash(new FileInfo(file));
         public static byte[] GetFileContentsHash(FileInfo file)
@@ -28,12 +23,12 @@ namespace FolderSynchronization.Helpers
             return true;
         }
 
-        public static void CopyDirectories(string sourceDir, string replicaDir)
+        public static void CopyDirectories(ILogger logger, string sourceDir, string replicaDir)
         {
-            CopyDirectories(new DirectoryInfo(sourceDir), new DirectoryInfo(replicaDir));
+            CopyDirectories(logger, new DirectoryInfo(sourceDir), new DirectoryInfo(replicaDir));
         }
 
-        public static void CopyDirectories(DirectoryInfo sourceDirInfo, DirectoryInfo replicaDirInfo)
+        public static void CopyDirectories(ILogger logger, DirectoryInfo sourceDirInfo, DirectoryInfo replicaDirInfo)
         {
             DirectoryInfo[] sourceSubDirInfo = sourceDirInfo.GetDirectories();
             DirectoryInfo[] replicaSubDirInfo = replicaDirInfo.GetDirectories();
@@ -43,10 +38,34 @@ namespace FolderSynchronization.Helpers
                 if (!replicaSubDirInfo.Select(x => x.Name).ToList().Contains(subDirInfo.Name))
                 {
                     var replicaNewDirectoryInfo = Directory.CreateDirectory(Path.Join(replicaDirInfo.FullName, subDirInfo.Name));
-                    CopyDirectories(subDirInfo, replicaNewDirectoryInfo);
+                    LoggingHelper.LogDirCreation(logger, replicaDirInfo.FullName, subDirInfo.Name);
+                    CopyDirectories(logger,subDirInfo, replicaNewDirectoryInfo);
                 }
             }
-            return;
+        }
+
+        public static void DeleteDirectories(ILogger logger, string sourceDir, string replicaDir)
+        {
+            DeleteDirectories(logger, new DirectoryInfo(sourceDir), new DirectoryInfo(replicaDir));
+        }
+
+        public static void DeleteDirectories(ILogger logger, DirectoryInfo sourceDirInfo, DirectoryInfo replicaDirInfo)
+        {
+            DirectoryInfo[] sourceSubDirInfo = sourceDirInfo.GetDirectories();
+            DirectoryInfo[] replicaSubDirInfo = replicaDirInfo.GetDirectories();
+
+            foreach (var subDirInfo in replicaSubDirInfo)
+            {
+                if (sourceSubDirInfo.Select(x => x.Name).ToList().Contains(subDirInfo.Name))
+                {
+                    DeleteDirectories(logger, new DirectoryInfo(Path.Join(sourceDirInfo.FullName, subDirInfo.Name)), subDirInfo);
+                }
+                else
+                {
+                    Directory.Delete(Path.Join(replicaDirInfo.FullName, subDirInfo.Name));
+                    LoggingHelper.LogDirDeletion(logger, replicaDirInfo.FullName, subDirInfo.Name);
+                }
+            }
         }
 
         public static string[] GetFiles(string directory) => Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories);

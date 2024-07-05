@@ -1,7 +1,6 @@
 using FolderSynchronization;
 using Serilog;
 
-
 string usageHelper = "Usage: dotnet run SourceDirectory=[source-directory] ReplicaDirectory=[replica-directory] LogsFilePath=[logs-file-path] SynchronizationInterval=[synchronization-interval]\n\n"
                     + "source-directory:\n\tThe path of the directory to be copied to the replica folder.\n"
                     + "replica-directory:\n\tThe path of the directory to where the contents of the source folder will be copied to.\n"
@@ -15,14 +14,12 @@ try
         Console.WriteLine(usageHelper);
         return 1;
     }
-    //TODO: Parse LogsFilePath Arg
-    var loggerFilePath = args[2];
 
     var builder = Host.CreateDefaultBuilder(args);
     builder.UseSerilog(new LoggerConfiguration()
             .MinimumLevel.Information()
             .WriteTo.Console()
-            .WriteTo.File(args[2])
+            .WriteTo.File(args[2].Substring(args[2].IndexOf("=") + 1))
             .CreateLogger())
 
         .ConfigureServices(services =>
