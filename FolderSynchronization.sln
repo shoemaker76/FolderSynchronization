@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FolderSynchronization", "FolderSynchronization.csproj", "{50EAFFA4-C96D-4A89-8B6A-74EBB322D9F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FolderSynchronization", ".\FolderSynchronization\FolderSynchronization.csproj", "{50EAFFA4-C96D-4A89-8B6A-74EBB322D9F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FolderSynchronization.Tests", "..\FolderSynchronization.Tests\FolderSynchronization.Tests.csproj", "{A3A334FF-77BC-446B-B2B0-C4EB514F4575}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FolderSynchronization.Tests", ".\FolderSynchronization.Tests\FolderSynchronization.Tests.csproj", "{A3A334FF-77BC-446B-B2B0-C4EB514F4575}"
 	ProjectSection(ProjectDependencies) = postProject
 		{50EAFFA4-C96D-4A89-8B6A-74EBB322D9F0} = {50EAFFA4-C96D-4A89-8B6A-74EBB322D9F0}
 	EndProjectSection
